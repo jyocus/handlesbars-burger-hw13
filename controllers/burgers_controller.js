@@ -8,6 +8,7 @@ var burger = require("../models/burger.js");
 // Create all our routes and set up logic within those routes where required.
 //Grab all burgers in our db
 router.get("/", function(req, res) {
+  console.log("get route hit");
     burger.all(function(data) {
       var burgerObject = {
         burgers: data
@@ -18,23 +19,33 @@ router.get("/", function(req, res) {
   });
   //route for new burgers the user has created
   router.post("/api/burgers", function(req, res) {
+    console.log("post route hit");
+  
     burger.create([
       "name", "devoured"
     ], [
-      req.body.name, false
-    ], function(data) {
-      res.send("Worked!!!");
+      req.body.name, req.body.devoured
+    ], function(result) {
+      res.json({ id: result.insertID});
     });
   });
   
   //Route will grab data for "devoured true/false"
-  router.put("/api/devoured/:burgerId", function(req, res) {
-  //console.log("devoured route")
+  router.put("/api/burgers/:burgerID", function(req, res) {
+  console.log("devoured route hit");
+  console.log(req.params.burgerID);
+  console.log(req.body.devour);
+  var condition = "id = " + req.params.burgerID;
     burger.update({
-      devoured: true
-    }, "id =" + req.params.putID, function (data){
+      devoured: req.body.devour
+    }, condition, function (result){
+      if (result.changedRows ==0) {
+      return res.status(404).end();
+    } else {
+      res.status(200)
+    }
     });
   });
   
 
-module.exports = router
+module.exports = router;
